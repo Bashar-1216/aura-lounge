@@ -4,10 +4,10 @@
  * Singleton PDO wrapper for MySQL
  */
 class Database {
-    private $host = 'localhost';
-    private $db_name = 'aura_lounge';
-    private $username = 'root';
-    private $password = '';
+    private $host = 'sql201.infinityfree.com';
+    private $db_name = 'if0_41828969_aura_lounge';
+    private $username = 'if0_41828969';
+    private $password = 'Xk0v3V3JlfKTa0K';
     private $conn = null;
 
     /**
