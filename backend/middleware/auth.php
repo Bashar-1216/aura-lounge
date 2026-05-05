@@ -66,7 +66,7 @@ function requireAuth($allowedRoles = ['admin', 'kitchen']) {
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
-    if (empty($authHeader) || !str_starts_with($authHeader, 'Bearer ')) {
+    if (empty($authHeader) || strpos($authHeader, 'Bearer ') !== 0) {
         sendUnauthorized('No token provided');
     }
 
