@@ -11,8 +11,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // Remove query string from URI for routing
 $path = parse_url($requestUri, PHP_URL_PATH);
-// Remove /api prefix if present
-$path = preg_replace('#^/api#', '', $path);
+// Remove /api or /backend prefix if present
+$path = preg_replace('#^/(api|backend)#', '', $path);
 
 // Parse route parameters
 $segments = explode('/', trim($path, '/'));
