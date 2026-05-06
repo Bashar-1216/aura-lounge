@@ -177,18 +177,30 @@ export default function KitchenView() {
                 <div className="kitchen-order-actions" style={{flexDirection:'column', gap:'0.8rem'}}>
                   {order.status === 'pending' || order.status === 'confirmed' ? (
                     <div style={{width:'100%'}}>
-                      <p style={{fontSize:'0.7rem', color:'var(--text-muted)', marginBottom:'0.5rem', textTransform:'uppercase'}}>Assign to Chef:</p>
+                      <p style={{fontSize:'0.7rem', color:'var(--text-muted)', marginBottom:'0.5rem', textTransform:'uppercase'}}>
+                        {activeStaff.length > 0 ? 'Assign to Chef:' : 'Action:'}
+                      </p>
                       <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap'}}>
                         {activeStaff.map(s => (
                           <button 
                             key={s.id} className="btn btn-sm btn-primary" 
-                            style={{fontSize:'0.75rem', padding:'0.4rem 0.8rem'}}
+                            style={{fontSize:'0.85rem', padding:'0.6rem 1rem', flex:1}}
                             onClick={() => handleStatusChange(order.id, 'preparing', s.name)}
                             disabled={updating[order.id]}
                           >
-                            {s.name}
+                            ▶ {s.name}
                           </button>
                         ))}
+                        {activeStaff.length === 0 && (
+                          <button 
+                            className="btn btn-sm btn-primary" 
+                            style={{fontSize:'0.85rem', padding:'0.6rem 1rem', width:'100%'}}
+                            onClick={() => handleStatusChange(order.id, 'preparing', 'Kitchen')}
+                            disabled={updating[order.id]}
+                          >
+                            ▶ Start Preparation
+                          </button>
+                        )}
                       </div>
                     </div>
                   ) : next && (
@@ -196,20 +208,22 @@ export default function KitchenView() {
                       className={`btn btn-sm ${statusBtnClass(order.status)}`}
                       onClick={() => handleStatusChange(order.id, next, order.prepared_by)}
                       disabled={updating[order.id]}
-                      style={{width:'100%'}}
+                      style={{width:'100%', padding:'0.8rem'}}
                     >
-                      {updating[order.id] ? '...' : `${statusBtnLabel(order.status)} (as ${order.prepared_by})`}
+                      {updating[order.id] ? '...' : `${statusBtnLabel(order.status)} (By ${order.prepared_by})`}
                     </button>
                   )}
                   
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleStatusChange(order.id, 'cancelled')}
-                    disabled={updating[order.id]}
-                    style={{width:'100%', marginTop: order.status === 'pending' ? '0.5rem' : '0'}}
-                  >
-                    ✕ Cancel Order
-                  </button>
+                  {user?.role === 'admin' && (
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleStatusChange(order.id, 'cancelled')}
+                      disabled={updating[order.id]}
+                      style={{width:'100%', marginTop: '0.5rem', opacity: 0.7}}
+                    >
+                      ✕ Cancel Order (Admin Only)
+                    </button>
+                  )}
                 </div>
               </div>
             );
