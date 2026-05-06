@@ -2,11 +2,11 @@
 /**
  * API for Staff Profiles
  */
-require_once __DIR__ . '/../../config/cors.php';
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../middleware/auth.php';
-require_once __DIR__ . '/../../models/Staff.php';
-require_once __DIR__ . '/../../utils/response.php';
+require_once __DIR__ . '/../config/cors.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../middleware/auth.php';
+require_once __DIR__ . '/../models/Staff.php';
+require_once __DIR__ . '/../utils/response.php';
 
 $decoded = requireAuth(['admin', 'kitchen']);
 $db = (new Database())->getConnection();
