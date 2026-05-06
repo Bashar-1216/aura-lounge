@@ -176,6 +176,62 @@ function OrderHistory() {
   );
 }
 
+function StaffManager() {
+  const [staff, setStaff] = useState([]);
+  const [newName, setNewName] = useState('');
+
+  const loadStaff = () => staffAPI.getAll().then(res => setStaff(res.data||[])).catch(console.error);
+  useEffect(() => { loadStaff(); }, []);
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!newName) return;
+    staffAPI.create(newName).then(() => { setNewName(''); loadStaff(); });
+  };
+
+  const handleToggle = (id, current) => {
+    staffAPI.toggle(id, !current).then(loadStaff);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Remove this staff member?')) {
+      staffAPI.delete(id).then(loadStaff);
+    }
+  };
+
+  return (
+    <>
+      <h2 className="admin-title">👨‍🍳 Kitchen Staff Management</h2>
+      <form onSubmit={handleAdd} className="glass-card" style={{padding:'1.5rem', marginBottom:'2rem', display:'flex', gap:'1rem'}}>
+        <input 
+          type="text" className="input" placeholder="Chef Name (e.g. Ahmed)" 
+          value={newName} onChange={e => setNewName(e.target.value)} 
+        />
+        <button type="submit" className="btn btn-primary">Add Staff Member</button>
+      </form>
+
+      <div className="kitchen-grid">
+        {staff.map(s => (
+          <div key={s.id} className="stat-card" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div>
+              <h3 style={{fontFamily:'Outfit', margin:0}}>{s.name}</h3>
+              <p style={{fontSize:'0.8rem', color:s.is_active?'#10b981':'#ef4444'}}>
+                {s.is_active ? '● Active' : '○ Off Duty'}
+              </p>
+            </div>
+            <div style={{display:'flex', gap:'0.5rem'}}>
+              <button className="btn btn-sm btn-outline" onClick={() => handleToggle(s.id, s.is_active)}>
+                {s.is_active ? 'Clock Out' : 'Clock In'}
+              </button>
+              <button className="btn btn-sm btn-danger" onClick={() => handleDelete(s.id)}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 function TablesQR() {
   const [tables, setTables] = useState([]);
   useEffect(() => {
@@ -297,6 +353,7 @@ export default function AdminDashboard() {
           <li><a className={tab==='menu'?'active':''} onClick={()=>setTab('menu')} style={{cursor:'pointer'}}>🍽️ Menu Items</a></li>
           <li><a className={tab==='orders'?'active':''} onClick={()=>setTab('orders')} style={{cursor:'pointer'}}>📋 Orders</a></li>
           <li><a className={tab==='qr'?'active':''} onClick={()=>setTab('qr')} style={{cursor:'pointer'}}>🖨️ QR Codes</a></li>
+          <li><a className={tab==='staff'?'active':''} onClick={()=>setTab('staff')} style={{cursor:'pointer'}}>👨‍🍳 Staff</a></li>
           <li><a className={tab==='kitchen'?'active':''} onClick={()=>setTab('kitchen')} style={{cursor:'pointer'}}>🏆 Kitchen Stars</a></li>
         </ul>
         <div style={{padding:'1rem 1.5rem'}}>
@@ -308,6 +365,7 @@ export default function AdminDashboard() {
         {tab === 'menu' && <MenuManager />}
         {tab === 'orders' && <OrderHistory />}
         {tab === 'qr' && <TablesQR />}
+        {tab === 'staff' && <StaffManager />}
         {tab === 'kitchen' && <KitchenLeaderboard />}
       </main>
     </div>

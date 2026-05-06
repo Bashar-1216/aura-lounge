@@ -24,25 +24,20 @@ function statusBtnClass(status) {
 export default function KitchenView() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [activeStaff, setActiveStaff] = useState([]);
 
   useEffect(() => {
     if (!user) {
       navigate('/admin/login');
+    } else {
+      staffAPI.getAll(true).then(res => setActiveStaff(res.data||[])).catch(console.error);
     }
   }, [user, navigate]);
 
   const fetchOrders = useCallback(() => orderAPI.getAll('pending,confirmed,preparing,ready'), []);
   const { data: orders, loading, refresh, error } = usePolling(fetchOrders, 5000);
   const [updating, setUpdating] = useState({});
-  const [activeOrderAction, setActiveOrderAction] = useState(null);
   const prevCountRef = useRef(0);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (!user) {
-      navigate('/admin/login');
-    }
-  }, [user, navigate]);
 
   // Play sound on new order
   useEffect(() => {
@@ -62,16 +57,15 @@ export default function KitchenView() {
     if (orders) prevCountRef.current = orders.length;
   }, [orders]);
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus, chefName = null) => {
     setUpdating(prev => ({ ...prev, [orderId]: true }));
     try {
-      // Automatically use the logged-in user's name or 'Chef'
-      const chefName = user?.name || 'Kitchen Staff';
-      await orderAPI.updateStatus(orderId, newStatus, chefName);
+      const name = chefName || user?.name || 'Kitchen Staff';
+      await orderAPI.updateStatus(orderId, newStatus, name);
       refresh();
     } catch (err) {
       console.error(err);
-      alert('Error updating status. Please ensure you added the prepared_by column to the orders table.');
+      alert('Error updating status. Please ensure you added the prepared_by column and staff table.');
     } finally {
       setUpdating(prev => ({ ...prev, [orderId]: false }));
     }
@@ -94,7 +88,7 @@ export default function KitchenView() {
   return (
     <div className="kitchen-page">
       <div className="kitchen-header">
-        <div>
+        <div style={{flex: 1}}>
           <div className="logo" style={{ fontSize: '1.3rem' }}>✦ AURA KITCHEN</div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Live Order Dashboard</p>
           {error && <p style={{ color: 'var(--danger)', fontSize: '0.75rem', marginTop: '0.2rem' }}>⚠️ Connection Error: Retrying...</p>}
@@ -111,6 +105,23 @@ export default function KitchenView() {
             </button>
           </div>
         </div>
+
+        <div style={{flex: 2, display:'flex', gap:'1rem', overflowX:'auto', padding:'0.5rem'}}>
+          {activeStaff.map(s => (
+            <div key={s.id} style={{
+              background:'rgba(197, 131, 97, 0.1)', border:'1px solid var(--accent)', 
+              padding:'0.5rem 1rem', borderRadius:'2rem', whiteSpace:'nowrap',
+              display:'flex', alignItems:'center', gap:'0.5rem'
+            }}>
+              <span style={{fontSize:'1.2rem'}}>👨‍🍳</span>
+              <span style={{fontSize:'0.9rem', fontWeight:600}}>{s.name}</span>
+            </div>
+          ))}
+          {activeStaff.length === 0 && (
+            <p style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>No staff clocked in. Manage staff in Admin panel.</p>
+          )}
+        </div>
+
         <div className="kitchen-stats">
           <div className="kitchen-stat">
             <div className="kitchen-stat-value" style={{ color: '#fbbf24' }}>{stats.pending}</div>
@@ -162,27 +173,43 @@ export default function KitchenView() {
                   ))}
                 </ul>
                 {order.notes && <p style={{ fontSize: '0.8rem', color: 'var(--warning)', marginBottom: '0.8rem' }}>📝 {order.notes}</p>}
-                <div className="kitchen-order-actions">
-                  {next && (
+                
+                <div className="kitchen-order-actions" style={{flexDirection:'column', gap:'0.8rem'}}>
+                  {order.status === 'pending' || order.status === 'confirmed' ? (
+                    <div style={{width:'100%'}}>
+                      <p style={{fontSize:'0.7rem', color:'var(--text-muted)', marginBottom:'0.5rem', textTransform:'uppercase'}}>Assign to Chef:</p>
+                      <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap'}}>
+                        {activeStaff.map(s => (
+                          <button 
+                            key={s.id} className="btn btn-sm btn-primary" 
+                            style={{fontSize:'0.75rem', padding:'0.4rem 0.8rem'}}
+                            onClick={() => handleStatusChange(order.id, 'preparing', s.name)}
+                            disabled={updating[order.id]}
+                          >
+                            {s.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : next && (
                     <button
                       className={`btn btn-sm ${statusBtnClass(order.status)}`}
-                      onClick={() => handleStatusChange(order.id, next)}
+                      onClick={() => handleStatusChange(order.id, next, order.prepared_by)}
                       disabled={updating[order.id]}
-                      id={`order-${order.id}-next`}
+                      style={{width:'100%'}}
                     >
-                      {updating[order.id] ? '...' : statusBtnLabel(order.status)}
+                      {updating[order.id] ? '...' : `${statusBtnLabel(order.status)} (as ${order.prepared_by})`}
                     </button>
                   )}
-                  {order.status !== 'cancelled' && order.status !== 'delivered' && (
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => handleStatusChange(order.id, 'cancelled')}
-                      disabled={updating[order.id]}
-                      id={`order-${order.id}-cancel`}
-                    >
-                      ✕ Cancel
-                    </button>
-                  )}
+                  
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleStatusChange(order.id, 'cancelled')}
+                    disabled={updating[order.id]}
+                    style={{width:'100%', marginTop: order.status === 'pending' ? '0.5rem' : '0'}}
+                  >
+                    ✕ Cancel Order
+                  </button>
                 </div>
               </div>
             );

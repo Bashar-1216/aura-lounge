@@ -59,4 +59,11 @@ export const tablesAPI = {
   getAll: () => api.get('/tables'),
 };
 
+export const staffAPI = {
+  getAll: (activeOnly = false) => api.get(`/staff${activeOnly ? '?active=1' : ''}`),
+  create: (name) => api.post('/staff', { name }),
+  delete: (id) => api.delete(`/staff?id=${id}`),
+  toggle: (id, is_active) => api.patch('/staff', { id, is_active }),
+};
+
 export default api;
