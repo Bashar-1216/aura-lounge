@@ -22,8 +22,12 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $data = getRequestBody();
     if (empty($data['name'])) sendError('Name is required');
-    if ($staff->create($data['name'])) {
-        sendSuccess(null, 'Staff created', 201);
+    try {
+        if ($staff->create($data['name'])) {
+            sendSuccess(null, 'Staff created', 201);
+        }
+    } catch (Exception $e) {
+        sendError('Database Error: ' . $e->getMessage());
     }
     sendError('Failed to create staff');
 }
