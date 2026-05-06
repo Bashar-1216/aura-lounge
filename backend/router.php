@@ -91,6 +91,10 @@ switch ($segments[0] ?? '') {
         }
         break;
 
+    case 'staff':
+        require __DIR__ . '/api/staff.php';
+        break;
+
     default:
         sendError('Endpoint not found', 404);
         break;
