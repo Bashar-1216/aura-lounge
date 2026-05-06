@@ -1,3 +1,12 @@
+const ICON_MAP = {
+  'Hot Drinks': '☕',
+  'Cold Drinks': '🥤',
+  'Pastries': '🥐',
+  'Breakfast': '🍳',
+  'Main Dishes': '🍽️',
+  'Desserts': '🍰',
+};
+
 export default function CategoryFilter({ categories, activeId, onSelect }) {
   return (
     <div className="category-filter">
@@ -15,7 +24,7 @@ export default function CategoryFilter({ categories, activeId, onSelect }) {
           onClick={() => onSelect(cat.id)}
           id={`category-${cat.id}`}
         >
-          {cat.icon} {cat.name}
+          {ICON_MAP[cat.name] || cat.icon || '🍴'} {cat.name}
         </button>
       ))}
     </div>
