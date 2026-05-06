@@ -186,7 +186,12 @@ function StaffManager() {
   const handleAdd = (e) => {
     e.preventDefault();
     if (!newName) return;
-    staffAPI.create(newName).then(() => { setNewName(''); loadStaff(); });
+    staffAPI.create(newName)
+      .then(() => { setNewName(''); loadStaff(); })
+      .catch(err => {
+        console.error(err);
+        alert('Failed to add staff. Did you run the SQL CREATE TABLE command? Error: ' + err.message);
+      });
   };
 
   const handleToggle = (id, current) => {
