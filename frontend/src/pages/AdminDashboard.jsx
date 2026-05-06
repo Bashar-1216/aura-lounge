@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { menuAPI, categoryAPI, orderAPI, tablesAPI } from '../services/api';
+import { menuAPI, categoryAPI, orderAPI, authAPI, tablesAPI, staffAPI } from '../services/api';
 import { QRCodeSVG } from 'qrcode.react';
 
 function StatsView() {
