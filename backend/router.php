@@ -96,6 +96,6 @@ switch ($segments[0] ?? '') {
         break;
 
     default:
-        sendError('Endpoint not found', 404);
+        sendError("Endpoint not found: " . ($segments[0] ?? 'unknown'), 404);
         break;
 }
