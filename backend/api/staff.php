@@ -26,8 +26,8 @@ if ($method === 'POST') {
         if ($staff->create($data['name'])) {
             sendSuccess(null, 'Staff created', 201);
         }
-    } catch (Exception $e) {
-        sendError('Database Error: ' . $e->getMessage());
+    } catch (Throwable $e) {
+        sendError('DB Error: ' . $e->getMessage());
     }
     sendError('Failed to create staff');
 }
