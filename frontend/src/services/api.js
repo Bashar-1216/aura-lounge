@@ -16,6 +16,12 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   res => res.data,
   err => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('aura_token');
+      if (!window.location.pathname.includes('/admin/login')) {
+        window.location.href = '/admin/login';
+      }
+    }
     const msg = err.response?.data?.message || 'Something went wrong';
     return Promise.reject({ message: msg, status: err.response?.status });
   }

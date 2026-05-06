@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { orderAPI } from '../services/api';
 import { usePolling } from '../hooks/usePolling';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const STATUS_FLOW = ['pending', 'confirmed', 'preparing', 'ready', 'delivered'];
 
@@ -23,6 +23,7 @@ function statusBtnClass(status) {
 
 export default function KitchenView() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const fetchOrders = useCallback(() => orderAPI.getAll('pending,confirmed,preparing,ready'), []);
   const { data: orders, loading, refresh } = usePolling(fetchOrders, 5000);
   const [updating, setUpdating] = useState({});
@@ -109,7 +110,13 @@ export default function KitchenView() {
             {user?.role === 'admin' && (
               <Link to="/admin" className="btn btn-outline btn-sm" style={{padding: '0.3rem 0.8rem'}}>← Back to Admin</Link>
             )}
-            <button onClick={logout} className="btn btn-outline btn-sm" style={{borderColor: 'var(--danger)', color: 'var(--danger)', padding: '0.3rem 0.8rem'}}>Logout</button>
+            <button 
+              onClick={() => { logout(); navigate('/admin/login'); }} 
+              className="btn btn-outline btn-sm" 
+              style={{borderColor: 'var(--danger)', color: 'var(--danger)', padding: '0.3rem 0.8rem'}}
+            >
+              Logout Account
+            </button>
           </div>
         </div>
         <div className="kitchen-stats">
