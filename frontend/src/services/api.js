@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://auralounge.free.nf';
+const API_BASE = '/backend';
 
 const api = axios.create({
   baseURL: API_BASE,

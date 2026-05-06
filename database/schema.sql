@@ -3,11 +3,6 @@
 -- Database Schema + Sample Data
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS aura_lounge
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE aura_lounge;
 
 -- ============================================
 -- 1. USERS (Admin & Kitchen staff)

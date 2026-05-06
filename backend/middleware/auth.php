@@ -60,11 +60,41 @@ function verifyToken($token) {
  * Middleware: Require authentication
  * Call this at the top of protected endpoints
  */
+if (!function_exists('getallheaders')) {
+    function getallheaders() {
+        $headers = [];
+        foreach ($_SERVER as $name => $value) {
+            if (substr($name, 0, 5) == 'HTTP_') {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
+    }
+}
+
 function requireAuth($allowedRoles = ['admin', 'kitchen']) {
     require_once __DIR__ . '/../utils/response.php';
 
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $authHeader = '';
+
+    // Try multiple sources for Authorization header (shared hosting compatibility)
+    if (function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    }
+
+    if (empty($authHeader) && isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+    }
+
+    if (empty($authHeader) && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    }
+
+    if (empty($authHeader) && function_exists('apache_request_headers')) {
+        $apacheHeaders = apache_request_headers();
+        $authHeader = $apacheHeaders['Authorization'] ?? $apacheHeaders['authorization'] ?? '';
+    }
 
     if (empty($authHeader) || strpos($authHeader, 'Bearer ') !== 0) {
         sendUnauthorized('No token provided');
