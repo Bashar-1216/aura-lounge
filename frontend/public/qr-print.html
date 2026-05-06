@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Lounge — QR Codes للطاولات</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0D0D0D;
+            color: #F5F0EB;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #C4956A;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #A0998F;
+            font-weight: 300;
+        }
+
+        .btn-print {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.8rem 2.5rem;
+            background: linear-gradient(135deg, #C4956A, #A07850);
+            color: #0D0D0D;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 149, 106, 0.3);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .qr-card {
+            background: #1A1A1A;
+            border: 1px solid rgba(196, 149, 106, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            page-break-inside: avoid;
+        }
+
+        .qr-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(196, 149, 106, 0.15);
+        }
+
+        .qr-card .table-label {
+            font-size: 0.85rem;
+            color: #A0998F;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .qr-card .table-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #C4956A;
+            margin-bottom: 1rem;
+        }
+
+        .qr-card .qr-container {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 12px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .qr-card .qr-container canvas {
+            display: block;
+        }
+
+        .qr-card .scan-text {
+            font-size: 0.75rem;
+            color: #706B63;
+            letter-spacing: 0.1em;
+        }
+
+        .qr-card .brand {
+            margin-top: 0.8rem;
+            font-size: 0.7rem;
+            color: #C4956A;
+            letter-spacing: 0.3em;
+            font-weight: 500;
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body {
+                background: #fff !important;
+                color: #000 !important;
+                padding: 0.5cm;
+            }
+
+            .header { margin-bottom: 1cm; }
+            .header h1 { color: #333 !important; font-size: 1.8rem; }
+            .header p { color: #666 !important; }
+            .btn-print { display: none !important; }
+
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.8cm;
+            }
+
+            .qr-card {
+                background: #fff !important;
+                border: 2px solid #333 !important;
+                border-radius: 10px;
+                padding: 0.8cm;
+                box-shadow: none !important;
+                transform: none !important;
+            }
+
+            .qr-card .table-label { color: #666 !important; }
+            .qr-card .table-number { color: #333 !important; }
+            .qr-card .scan-text { color: #888 !important; }
+            .qr-card .brand { color: #666 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>✦ AURA LOUNGE</h1>
+    <p>أكواد QR للطاولات — امسح الكود لفتح المنيو</p>
+    <button class="btn-print" onclick="window.print()">🖨️ طباعة أكواد QR</button>
+</div>
+
+<div class="grid" id="qr-grid"></div>
+
+<script>
+    const BASE_URL = 'http://auralounge.free.nf';
+    const TABLES = [
+        { id: 1, number: 'T1' },
+        { id: 2, number: 'T2' },
+        { id: 3, number: 'T3' },
+        { id: 4, number: 'T4' },
+        { id: 5, number: 'T5' },
+        { id: 6, number: 'T6' },
+        { id: 7, number: 'T7' },
+        { id: 8, number: 'T8' },
+        { id: 9, number: 'T9' },
+        { id: 10, number: 'T10' },
+        { id: 11, number: 'T11' },
+        { id: 12, number: 'T12' },
+    ];
+
+    const grid = document.getElementById('qr-grid');
+
+    TABLES.forEach(table => {
+        const url = `${BASE_URL}/menu?table=${table.id}`;
+        
+        // Generate QR code
+        const qr = qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+        card.innerHTML = `
+            <div class="table-label">TABLE</div>
+            <div class="table-number">${table.number}</div>
+            <div class="qr-container">
+                ${qr.createSvgTag({ cellSize: 4, margin: 0 })}
+            </div>
+            <div class="scan-text">SCAN TO ORDER</div>
+            <div class="brand">✦ AURA LOUNGE</div>
+        `;
+        grid.appendChild(card);
+    });
+</script>
+
+</body>
+</html>
