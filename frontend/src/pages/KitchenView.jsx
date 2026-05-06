@@ -63,34 +63,15 @@ export default function KitchenView() {
   }, [orders]);
 
   const handleStatusChange = async (orderId, newStatus) => {
-    if (newStatus === 'preparing' || newStatus === 'ready') {
-      setActiveOrderAction({ orderId, nextStatus: newStatus });
-      return;
-    }
-    
     setUpdating(prev => ({ ...prev, [orderId]: true }));
     try {
-      await orderAPI.updateStatus(orderId, newStatus);
+      // Automatically use the logged-in user's name or 'Chef'
+      const chefName = user?.name || 'Kitchen Staff';
+      await orderAPI.updateStatus(orderId, newStatus, chefName);
       refresh();
     } catch (err) {
       console.error(err);
-    } finally {
-      setUpdating(prev => ({ ...prev, [orderId]: false }));
-    }
-  };
-
-  const handleChefSelect = async (chefName) => {
-    if (!activeOrderAction) return;
-    const { orderId, nextStatus } = activeOrderAction;
-    setActiveOrderAction(null);
-    
-    setUpdating(prev => ({ ...prev, [orderId]: true }));
-    try {
-      await orderAPI.updateStatus(orderId, nextStatus, chefName);
-      refresh();
-    } catch (err) {
-      console.error(err);
-      alert('Error updating status. Did you run the SQL ALTER TABLE command?');
+      alert('Error updating status. Please ensure you added the prepared_by column to the orders table.');
     } finally {
       setUpdating(prev => ({ ...prev, [orderId]: false }));
     }
@@ -206,36 +187,6 @@ export default function KitchenView() {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {activeOrderAction && (
-        <div className="modal-overlay" style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(26,26,26,0.8)' }}>
-          <div className="modal-content" style={{ borderRadius: 'var(--radius-lg)', padding: '3rem', maxWidth: '450px', textAlign: 'center' }}>
-            <h2 style={{ marginBottom: '2.5rem', fontFamily: 'Outfit', letterSpacing: '1px', fontSize: '1.8rem' }}>Chef Accountability</h2>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', fontSize: '0.95rem' }}>Select the chef responsible for this order</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              {['Chef A', 'Chef B', 'Chef C'].map(chef => (
-                <button 
-                  key={chef} 
-                  className="btn btn-outline"
-                  onClick={() => handleChefSelect(chef)}
-                  style={{
-                    padding: '1.5rem', fontSize: '1.1rem', borderRadius: 'var(--radius-md)',
-                    justifyContent: 'center', fontWeight: 600
-                  }}
-                >
-                  {chef}
-                </button>
-              ))}
-            </div>
-            <button 
-              onClick={() => setActiveOrderAction(null)}
-              style={{ marginTop: '2.5rem', background: 'transparent', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.9rem', textDecoration: 'underline' }}
-            >
-              Cancel Action
-            </button>
-          </div>
         </div>
       )}
     </div>
