@@ -126,7 +126,7 @@ class Order {
                 $placeholders[] = ":{$key}";
                 $params[$key] = $status;
             }
-            $sql .= " WHERE o.status IN (" . implode(',', $placeholders) . ")";
+            $sql .= " WHERE TRIM(LOWER(o.status)) IN (" . implode(',', $placeholders) . ")";
         }
 
         $sql .= " ORDER BY o.created_at DESC LIMIT :limit OFFSET :offset";
