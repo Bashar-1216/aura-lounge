@@ -24,6 +24,13 @@ function statusBtnClass(status) {
 export default function KitchenView() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/admin/login');
+    }
+  }, [user, navigate]);
+
   const fetchOrders = useCallback(() => orderAPI.getAll('pending,confirmed,preparing,ready'), []);
   const { data: orders, loading, refresh } = usePolling(fetchOrders, 5000);
   const [updating, setUpdating] = useState({});
