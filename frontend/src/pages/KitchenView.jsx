@@ -32,20 +32,22 @@ export default function KitchenView() {
   }, [user, navigate]);
 
   const fetchOrders = useCallback(() => orderAPI.getAll('pending,confirmed,preparing,ready'), []);
-  const { data: orders, loading, refresh } = usePolling(fetchOrders, 5000);
+  const { data: orders, loading, refresh, error } = usePolling(fetchOrders, 5000);
   const [updating, setUpdating] = useState({});
   const [activeOrderAction, setActiveOrderAction] = useState(null);
   const prevCountRef = useRef(0);
   const audioRef = useRef(null);
 
+  useEffect(() => {
+    if (!user) {
+      navigate('/admin/login');
+    }
+  }, [user, navigate]);
+
   // Play sound on new order
   useEffect(() => {
     if (orders && orders.length > prevCountRef.current) {
       try {
-        if (!audioRef.current) {
-          audioRef.current = new Audio('data:audio/wav;base64,UklGRl9vT19televiXZlRm10teleIBAABBBIAIABAAAA=');
-        }
-        // Simple beep notification
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -80,7 +82,7 @@ export default function KitchenView() {
   const handleChefSelect = async (chefName) => {
     if (!activeOrderAction) return;
     const { orderId, nextStatus } = activeOrderAction;
-    setActiveOrderAction(null); // Close instantly
+    setActiveOrderAction(null);
     
     setUpdating(prev => ({ ...prev, [orderId]: true }));
     try {
@@ -88,6 +90,7 @@ export default function KitchenView() {
       refresh();
     } catch (err) {
       console.error(err);
+      alert('Error updating status. Did you run the SQL ALTER TABLE command?');
     } finally {
       setUpdating(prev => ({ ...prev, [orderId]: false }));
     }
@@ -105,7 +108,7 @@ export default function KitchenView() {
     total: (orders || []).length
   };
 
-  if (loading) return <div className="page-loader"><div className="loader-spinner" /></div>;
+  if (loading && !orders) return <div className="page-loader"><div className="loader-spinner" /></div>;
 
   return (
     <div className="kitchen-page">
@@ -113,6 +116,7 @@ export default function KitchenView() {
         <div>
           <div className="logo" style={{ fontSize: '1.3rem' }}>✦ AURA KITCHEN</div>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Live Order Dashboard</p>
+          {error && <p style={{ color: 'var(--danger)', fontSize: '0.75rem', marginTop: '0.2rem' }}>⚠️ Connection Error: Retrying...</p>}
           <div style={{ marginTop: '0.8rem', display: 'flex', gap: '0.5rem' }}>
             {user?.role === 'admin' && (
               <Link to="/admin" className="btn btn-outline btn-sm" style={{padding: '0.3rem 0.8rem'}}>← Back to Admin</Link>
